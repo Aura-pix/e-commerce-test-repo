@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: E-commerce Product API
+  version: 1.0.0
+  description: In-memory product API. All endpoints require an x-api-key header.
+servers:
+  - url: http://localhost:3000
+security:
+  - ApiKeyAuth: []
+paths:
+  /api/products:
+    get:
+      summary: List products
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Products matching the optional category filter.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProduct"
+      responses:
+        "201":
+          description: Product created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          description: Request body validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/products/{id}:
+    get:
+      summary: Get a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  responses:
+    Unauthorized:
+      description: The x-api-key header is missing.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    CreateProduct:
+      type: object
+      required:
+        - name
+        - price
+        - stock
+      properties:
+        name:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        stock:
+          type: integer
+          minimum: 0
+        category:
+          type: string
+    Product:
+      allOf:
+        - $ref: "#/components/schemas/CreateProduct"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: integer
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+    ValidationError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - type: object
+          required:
+            - details
+          properties:
+            details:
+              type: array
+              items:
+                type: object
+                required:
+                  - path
+                  - message
+                properties:
+                  path:
+                    type: string
+                  message:
+                    type: string
