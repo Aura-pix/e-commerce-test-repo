@@ -9,6 +9,7 @@ const createProductSchema = z.object({
   price: z.number().positive(),
   stock: z.number().int().nonnegative(),
   category: z.string().optional(),
+  discountPercentage: z.number().min(0).max(100).optional(), // NEW FIELD
 });
 
 type Product = {
@@ -17,6 +18,7 @@ type Product = {
   price: number;
   stock: number;
   category?: string;
+  discountPercentage?: number; // NEW FIELD
 };
 
 const products: Product[] = [];
@@ -70,6 +72,26 @@ app.get("/api/products/:id", (req, res) => {
   }
 
   res.json(product);
+});
+
+app.delete("/api/products/:id", (req, res) => {
+  const productId = Number(req.params.id);
+  const index = products.findIndex((item) => item.id === productId);
+
+  if (index === -1) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+
+  if (products[index].stock > 0) {
+    res
+      .status(409)
+      .json({ error: "Cannot delete product with existing stock" }); // NEW ERROR CODE
+    return;
+  }
+
+  products.splice(index, 1);
+  res.status(204).send();
 });
 
 const port = Number(process.env.PORT ?? 3000);
