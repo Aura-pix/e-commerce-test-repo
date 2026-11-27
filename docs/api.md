@@ -18,32 +18,32 @@ Returns the product with the specified numeric ID and `200 OK`.
 If no product has that ID, the response is `404 Not Found`:
 
 ```json
-{"error":"Product not found"}
+{ "error": "Product not found" }
 ```
 
 ### `POST /api/products`
 
 Create a product by sending a JSON object with these fields:
 
-| Field | Type | Requirement |
-| --- | --- | --- |
-| `name` | string | Required; must not be empty. |
-| `price` | number | Required; must be greater than zero. |
-| `stock` | integer | Required; must be zero or greater. |
-| `category` | string | Optional. |
+| Field     | Type    | Requirement                          |
+| --------- | ------- | ------------------------------------ |
+| `name`    | string  | Required; must not be empty.         |
+| `price    | number  | Required; must be greater than zero. |
+| `stock`   | integer | Required; must be zero or greater.   |
+| `category | string  | Optional.                            |
 
 Returns `201 Created` with the product and its generated numeric `id`.
 
 Invalid or missing fields return `400 Bad Request`:
 
-```json
+````json
 {
   "error": "Validation failed",
   "details": [
     {"path":"stock","message":"Invalid input: expected number, received undefined"}
   ]
 }
-```
+
 
 ## Errors
 
@@ -51,8 +51,7 @@ All endpoints return `401 Unauthorized` if the `x-api-key` header is missing:
 
 ```json
 {"error":"Missing x-api-key header"}
-```
+````
 
 `POST /api/products` returns `400 Bad Request` when the request body does not
-match the field requirements above. `GET /api/products/:id` returns
-`404 Not Found` when the product does not exist.
+match the field requirements above. GET /api/products/:id`returns`404 Not Found` when the product does not exist.
