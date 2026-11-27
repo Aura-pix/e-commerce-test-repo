@@ -1,82 +1,214 @@
 # Product API
 
-The API stores products in memory, so product data is cleared when the server
-restarts. Every endpoint requires the `x-api-key` request header. The server
-checks that the header is present but does not validate its value.
+The API stores products in memory, so product data is cleared whenever the
+server restarts.
+
+## Base URL
+
+```text
+http://localhost:3000
+```
+
+## Authentication
+
+Every endpoint requires an `x-api-key` request header. The header is checked
+for presence but its value is not validated.
+
+```http
+x-api-key: <any-value>
+```
+
+If the header is missing, the API returns `401 Unauthorized`:
+
+```json
+{
+  "error": "Missing x-api-key header"
+}
+```
 
 ## Products
 
-### `GET /api/products
+### `GET /api/products`
 
-Returns all products with `200 OK`. An optional `category` query parameter
-filters the results by exact category match.
+Returns all products.
+
+**Query parameters**
+
+| Parameter  | Type   | Required | Description                                  |
+| ---------- | ------ | -------- | -------------------------------------------- |
+| `category` | string | No       | Filters products by an exact category match. |
+
+**Successful response**
+
+`200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Keyboard",
+    "price": 79.99,
+    "stock": 12,
+    "category": "Accessories",
+    "discountPercentage": 10,
+    "imageUrls": ["https://example.com/keyboard.jpg"]
+  }
+]
+```
 
 ### `GET /api/products/:id`
 
-Returns the product with the specified numeric ID and `200 OK`.
+Returns the product with the specified numeric ID.
 
-If no product has that ID, the response is `404 Not Found`:
+**Successful response**
+
+`200 OK`
 
 ```json
-{ "error": "Product not found" }
+{
+  "id": 1,
+  "name": "Keyboard",
+  "price": 79.99,
+  "stock": 12,
+  "category": "Accessories"
+}
+```
+
+**Error response**
+
+`404 Not Found`
+
+```json
+{
+  "error": "Product not found"
+}
 ```
 
 ### `POST /api/products`
 
-Create a product by sending a JSON object with these fields:
+Creates a product. Send a JSON object with the following fields:
 
-| Field      | Type     | Requirement                          |
-| ---------- | -------- | ------------------------------------ |
-| `name`     | string   | Required; must not be empty.         |
-| price`     | number   | Required; must be greater than zero. |
-| `stock`    | integer  | Required; must be zero or greater.   |
-| `category` | string   | Optional.                            |
-| `imageUrls | string[] | Optional; up to 5 valid URLs.        |
+| Field                | Type     | Required | Constraints                        |
+| -------------------- | -------- | -------- | ---------------------------------- |
+| `name`               | string   | Yes      | Must not be empty.                 |
+| `price`              | number   | Yes      | Must be greater than zero.         |
+| `stock`              | integer  | Yes      | Must be zero or greater.           |
+| `category`           | string   | No       | -                                  |
+| `discountPercentage` | number   | No       | Must be from 0 through 100.        |
+| `imageUrls`          | string[] | No       | Valid URLs, with a maximum of five. |
 
-Returns `201 Created` with the product and its generated numeric `id`.
+**Example request**
 
-Invalid or missing fields return `400 Bad Request`:
+```json
+{
+  "name": "Keyboard",
+  "price": 79.99,
+  "stock": 12,
+  "category": "Accessories",
+  "discountPercentage": 10,
+  "imageUrls": ["https://example.com/keyboard.jpg"]
+}
+```
 
-````json
+**Successful response**
+
+`201 Created`
+
+```json
+{
+  "id": 1,
+  "name": "Keyboard",
+  "price": 79.99,
+  "stock": 12,
+  "category": "Accessories",
+  "discountPercentage": 10,
+  "imageUrls": ["https://example.com/keyboard.jpg"]
+}
+```
+
+**Error response**
+
+`400 Bad Request`
+
+```json
 {
   "error": "Validation failed",
   "details": [
-    {"path":"stock","message":"Invalid input: expected number, received undefined"}
+    {
+      "path": "stock",
+      "message": "Invalid input: expected number, received undefined"
+    }
   ]
 }
-
+```
 
 ### `PATCH /api/products/:id`
 
-Partially updates the product with the specified numeric ID.
+Partially updates the product with the specified numeric ID. Only `price` is
+currently supported.
 
-| Field | Type | Requirement |
-| --- | --- | --- |
-| `price` | number | Optional; must be greater than zero. |
+| Field   | Type   | Required | Constraints                |
+| ------- | ------ | -------- | -------------------------- |
+| `price` | number | No       | Must be greater than zero. |
 
-Returns `200 OK` with the updated product.
+**Successful response**
 
-If no product has that ID, the response is `404 Not Found`:
+`200 OK`
 
-`json
-{"error":"Product not found"}
+```json
+{
+  "id": 1,
+  "name": "Keyboard",
+  "price": 89.99,
+  "stock": 12,
+  "category": "Accessories"
+}
 ```
 
-If `price` is less than or equal to zero, the response is `422 Unprocessable Entity`:
+**Error responses**
+
+`404 Not Found`
 
 ```json
-{"error":"Price must be greater than 0"}
-``
+{
+  "error": "Item not found, contact support"
+}
+```
 
-## Errors
-
-All endpoints return `401 Unauthorized` if the `x-api-key` header is missing:
+`422 Unprocessable Entity`
 
 ```json
-{"error":"Missing x-api-key header"}
-````
+{
+  "error": "Price must be greater than 0"
+}
+```
 
-POST /api/products`returns`400 Bad Request`when the request body does not
-match the field requirements above.`GET /api/products/:id`and`PATCH /api/products/:id` return 404 Not Found` when the product does not
-exist. `PATCH /api/products/:id` returns `422 Unprocessable Entity` when
-`price` is less than or equal to zero.
+### `DELETE /api/products/:id`
+
+Deletes the product with the specified numeric ID.
+
+Products with stock greater than zero cannot be deleted.
+
+**Successful response**
+
+`204 No Content`
+
+The response body is empty.
+
+**Error responses**
+
+`404 Not Found`
+
+```json
+{
+  "error": "Product not found"
+}
+```
+
+`409 Conflict`
+
+```json
+{
+  "error": "Cannot delete product with existing stock"
+}
+```
