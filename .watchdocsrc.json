@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "watch": {
+    "routes": [
+      "src/routes/**/*.{ts,js}",
+      "routes/**/*.{ts,js}",
+      "src/controllers/**/*.{ts,js}",
+      "controllers/**/*.{ts,js}",
+      "src/app.{ts,js}",
+      "app.{ts,js}"
+    ]
+  },
+  "docs": {
+    "paths": [
+      "docs"
+    ]
+  },
+  "pr": {
+    "branchPrefix": "watchdocs/sync-",
+    "reviewers": []
+  }
+}
