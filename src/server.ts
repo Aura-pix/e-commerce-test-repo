@@ -69,6 +69,7 @@ app.post("/api/products", (req, res) => {
   res.status(201).json(product);
 });
 
+// TODO: Add pagination support
 app.get("/api/products/:id", (req, res) => {
   const productId = Number(req.params.id);
   const product = products.find((item) => item.id === productId);
@@ -126,7 +127,7 @@ const port = Number(process.env.PORT ?? 3000);
 
 if (require.main === module) {
   app.listen(port, () => {
-    console.log(`Product API listening on port ${port}`);
+    console.log(`E-commerce API listening on... ${port}`);
   });
 }
 
