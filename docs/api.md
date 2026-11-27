@@ -31,6 +31,7 @@ Create a product by sending a JSON object with these fields:
 | `price` | number | Required; must be greater than zero. |
 | `stock` | integer | Required; must be zero or greater. |
 | `category` | string | Optional. |
+| `imageUrls` | string[] | Optional; up to 5 valid URLs. |
 
 Returns `201 Created` with the product and its generated numeric `id`.
 
@@ -45,6 +46,28 @@ Invalid or missing fields return `400 Bad Request`:
 }
 ```
 
+### `PATCH /api/products/:id`
+
+Partially updates the product with the specified numeric ID.
+
+| Field | Type | Requirement |
+| --- | --- | --- |
+| `price` | number | Optional; must be greater than zero. |
+
+Returns `200 OK` with the updated product.
+
+If no product has that ID, the response is `404 Not Found`:
+
+```json
+{"error":"Product not found"}
+```
+
+If `price` is less than or equal to zero, the response is `422 Unprocessable Entity`:
+
+```json
+{"error":"Price must be greater than 0"}
+```
+
 ## Errors
 
 All endpoints return `401 Unauthorized` if the `x-api-key` header is missing:
@@ -54,5 +77,7 @@ All endpoints return `401 Unauthorized` if the `x-api-key` header is missing:
 ```
 
 `POST /api/products` returns `400 Bad Request` when the request body does not
-match the field requirements above. `GET /api/products/:id` returns
-`404 Not Found` when the product does not exist.
+match the field requirements above. `GET /api/products/:id` and
+`PATCH /api/products/:id` return `404 Not Found` when the product does not
+exist. `PATCH /api/products/:id` returns `422 Unprocessable Entity` when
+`price` is less than or equal to zero.
