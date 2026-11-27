@@ -107,7 +107,7 @@ app.patch("/api/products/:id", (req, res) => {
   const product = products.find((item) => item.id === productId);
 
   if (!product) {
-    res.status(404).json({ error: "Product not found" });
+    res.status(404).json({ error: "Item not found, contact support" });
     return;
   }
 
