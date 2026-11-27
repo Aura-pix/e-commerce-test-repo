@@ -9,7 +9,13 @@ const createProductSchema = z.object({
   price: z.number().positive(),
   stock: z.number().int().nonnegative(),
   category: z.string().optional(),
-  discountPercentage: z.number().min(0).max(100).optional(), // NEW FIELD
+  discountPercentage: z.number().min(0).max(100).optional(), // From our first test
+  // NEW CONTEXT ADDITION
+  imageUrls: z
+    .array(z.string().url())
+    .max(5)
+    .optional()
+    .describe("Up to 5 image URLs for the product"),
 });
 
 type Product = {
@@ -18,7 +24,8 @@ type Product = {
   price: number;
   stock: number;
   category?: string;
-  discountPercentage?: number; // NEW FIELD
+  discountPercentage?: number; // From our first test
+  imageUrls?: string[]; // NEW CONTEXT ADDITION
 };
 
 const products: Product[] = [];
@@ -92,6 +99,27 @@ app.delete("/api/products/:id", (req, res) => {
 
   products.splice(index, 1);
   res.status(204).send();
+});
+
+app.patch("/api/products/:id", (req, res) => {
+  const productId = Number(req.params.id);
+  const product = products.find((item) => item.id === productId);
+
+  if (!product) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+
+  // Simple partial update
+  if (req.body.price !== undefined) {
+    if (req.body.price <= 0) {
+      res.status(422).json({ error: "Price must be greater than 0" }); // NEW ERROR CODE
+      return;
+    }
+    product.price = req.body.price;
+  }
+
+  res.json(product);
 });
 
 const port = Number(process.env.PORT ?? 3000);

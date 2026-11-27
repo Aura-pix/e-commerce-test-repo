@@ -9,7 +9,7 @@
       "src/app.{ts,js}",
       "app.{ts,js}",
       "src/index.{ts,js}",
-      "src**/*.{ts,js}"
+      "src/**/*.{ts,js}"
     ]
   },
   "docs": {
